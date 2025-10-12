@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Magazine Manager</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .form-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .form-section h2 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      margin: 5px 5px 5px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 150px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #007bff;
+      color: #fff;
+    }
+
+    tr:hover {
+      background: #f1f7ff;
+    }
+
+    .action-btn {
+      padding: 5px 8px;
+      margin-right: 5px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .update-btn {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .update-btn:hover {
+      background: #1e7e34;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .delete-btn:hover {
+      background: #a71d2a;
+    }
+
+    @media (max-width: 600px) {
+      input[type="text"], input[type="number"] {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Magazine Manager</h1>
+
+  <div class="form-section">
+    <h2>Create Magazine</h2>
+    <input type="text" id="newTitle" placeholder="Title">
+    <input type="text" id="newAuthor" placeholder="Author">
+    <input type="number" id="newPrice" placeholder="Price">
+    <button onclick="createMagazine()">Create</button>
+  </div>
+
+  <div class="form-section">
+    <h2>All Magazines</h2>
+    <table id="magazinesTable">
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Author</th><th>Price</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const BASE_URL = "http://localhost:8082/magazines";
+
+    async function getAllMagazines() {
+      const res = await fetch(BASE_URL);
+      const data = await res.json();
+      const tbody = document.querySelector("#magazinesTable tbody");
+      tbody.innerHTML = "";
+
+      data.forEach(m => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${m.id}</td>
+          <td><input type="text" value="${m.title}" id="title-${m.id}"></td>
+          <td><input type="text" value="${m.author}" id="author-${m.id}"></td>
+          <td><input type="number" value="${m.price}" id="price-${m.id}"></td>
+          <td>
+            <button class="action-btn update-btn" onclick="updateMagazine(${m.id})">Update</button>
+            <button class="action-btn delete-btn" onclick="deleteMagazine(${m.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function createMagazine() {
+      const title = document.getElementById("newTitle").value;
+      const author = document.getElementById("newAuthor").value;
+      const price = document.getElementById("newPrice").value;
+
+      if (!title || !author || !price) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      const res = await fetch(BASE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, author, price })
+      });
+      const data = await res.json();
+      alert("Created: " + JSON.stringify(data));
+      getAllMagazines();
+      document.getElementById("newTitle").value = "";
+      document.getElementById("newAuthor").value = "";
+      document.getElementById("newPrice").value = "";
+    }
+
+    async function updateMagazine(id) {
+      const title = document.getElementById(`title-${id}`).value;
+      const author = document.getElementById(`author-${id}`).value;
+      const price = document.getElementById(`price-${id}`).value;
+
+      const res = await fetch(BASE_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, title, author, price })
+      });
+      const data = await res.json();
+      alert("Updated: " + JSON.stringify(data));
+      getAllMagazines();
+    }
+
+    async function deleteMagazine(id) {
+      const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      alert("Deleted: " + JSON.stringify(data));
+      getAllMagazines();
+    }
+
+    // Initial load
+    getAllMagazines();
+  </script>
+</body>
+</html>
