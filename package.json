@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo "Test Completed",
+    "test": "echo Test Completed",
     "start": "nodemon server.js",
-    "build": "echo "Build in process""
+    "build": "echo Build in process"
   },
   "keywords": [],
   "author": "",
